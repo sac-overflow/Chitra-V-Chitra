@@ -1,0 +1,210 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+
+  /* Light Mode - Soft white with subtle accents */
+  --background: #FAFAFA;
+  --foreground: #0B0D12;
+  --card: #FFFFFF;
+  --card-foreground: #0B0D12;
+  --popover: #FFFFFF;
+  --popover-foreground: #0B0D12;
+  --primary: #FF0F8F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #8B2BFF;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F3F3F5;
+  --muted-foreground: #717182;
+  --accent: #00D4FF;
+  --accent-foreground: #FFFFFF;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(139, 43, 255, 0.15);
+  --input: rgba(0, 0, 0, 0.05);
+  --input-background: #FFFFFF;
+  --switch-background: #E5E5E5;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --ring: #8B2BFF;
+  --radius: 0.75rem;
+
+  /* Neon Colors */
+  --neon-pink: #FF0F8F;
+  --neon-magenta: #D91CFF;
+  --neon-purple: #8B2BFF;
+  --neon-blue: #00D4FF;
+  --neon-cyan: #00F5FF;
+  --neon-yellow: #FFD500;
+  --neon-orange: #FF9F1A;
+
+  /* Gradients */
+  --gradient-1: linear-gradient(135deg, #FF0F8F, #8B2BFF, #00D4FF);
+  --gradient-2: linear-gradient(135deg, #FFD500, #FF0F8F, #8B2BFF);
+  --gradient-3: linear-gradient(135deg, #00F5FF, #D91CFF, #FF9F1A);
+}
+
+.dark {
+  /* Dark Mode - Cosmic black with neon accents */
+  --background: #050505;
+  --foreground: #FFFFFF;
+  --card: #0B0D12;
+  --card-foreground: #FFFFFF;
+  --popover: #0B0D12;
+  --popover-foreground: #FFFFFF;
+  --primary: #FF0F8F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #8B2BFF;
+  --secondary-foreground: #FFFFFF;
+  --muted: #0B0D12;
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --accent: #00D4FF;
+  --accent-foreground: #FFFFFF;
+  --destructive: #FF0F8F;
+  --destructive-foreground: #ffffff;
+  --border: rgba(139, 43, 255, 0.3);
+  --input: rgba(255, 255, 255, 0.05);
+  --input-background: rgba(255, 255, 255, 0.03);
+  --ring: #8B2BFF;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Custom Neon Colors */
+  --color-neon-pink: var(--neon-pink);
+  --color-neon-magenta: var(--neon-magenta);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-blue: var(--neon-blue);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-yellow: var(--neon-yellow);
+  --color-neon-orange: var(--neon-orange);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    font-family: var(--font-heading);
+  }
+
+  input, textarea, select {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+    font-family: var(--font-body);
+  }
+
+  p {
+    font-family: var(--font-body);
+    line-height: 1.7;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF0F8F, #8B2BFF, #00D4FF);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #D91CFF, #00D4FF, #FFD500);
+  }
+
+  /* Selection color */
+  ::selection {
+    background: rgba(139, 43, 255, 0.3);
+    color: var(--foreground);
+  }
+}
