@@ -170,6 +170,7 @@ export function ServiceModal({ service, onClose }: Props) {
   const [eventOptions, setEventOptions] = useState<Record<string, string>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clientInfo, setClientInfo] = useState({ name: "", email: "", phone: "" });
 
   const totalSubEventPrice = WEDDING_SUB_EVENTS
     .filter((e) => selectedSubEvents[e.id])
@@ -193,11 +194,40 @@ export function ServiceModal({ service, onClose }: Props) {
     setEventOptions((prev) => ({ ...prev, [key]: val }));
 
   const handleSubmit = async (type: "contact" | "onboarding") => {
+    if (!clientInfo.name.trim() || !clientInfo.email.trim() || !clientInfo.phone.trim()) {
+      toast.error("Please fill out your contact details (Name, Email, and Phone) in the form above.");
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientInfo.email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    // Phone validation
+    const cleanPhone = clientInfo.phone.replace(/[^0-9]/g, "");
+    const phoneRegex = /^\+?[0-9\s\-()]{10,15}$/;
+    if (!phoneRegex.test(clientInfo.phone.trim()) || cleanPhone.length < 10 || cleanPhone.length > 15) {
+      toast.error("Please enter a valid phone number (10 to 15 digits).");
+      return;
+    }
+
+    const finalBudget = budget || (isWedding ? totalSubEventPrice : budget);
+    if (finalBudget <= 0 || isNaN(Number(finalBudget))) {
+      toast.error("Budget must be a positive number greater than 0.");
+      return;
+    }
+
     setIsSubmitting(true);
     const payload = {
+      name: clientInfo.name,
+      email: clientInfo.email,
+      phone: clientInfo.phone,
       service: service.title,
       packageType: service.packageType,
-      budget: isWedding ? totalSubEventPrice : budget,
+      budget: finalBudget,
       selectedPackages: isWedding
         ? WEDDING_SUB_EVENTS.filter((e) => selectedSubEvents[e.id]).map((e) => e.name)
         : [],
@@ -234,6 +264,16 @@ export function ServiceModal({ service, onClose }: Props) {
               const verifyData = await verifyRes.json();
               
               if (verifyData.message === 'Payment verified successfully') {
+                // Post details to the enquiry log CSV
+                await fetch("http://localhost:3001/api/enquiry", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    ...payload,
+                    message: `Paid Onboarding Fee (₹299) successfully. Payment ID: ${response.razorpay_payment_id}`,
+                  }),
+                });
+
                 toast.success(
                   "🎉 Payment Successful! Our planning team will contact you within 24 hours.",
                   { duration: 6000 }
@@ -247,9 +287,9 @@ export function ServiceModal({ service, onClose }: Props) {
             }
           },
           prefill: {
-            name: "John Doe",
-            email: "johndoe@example.com",
-            contact: "9999999999"
+            name: clientInfo.name,
+            email: clientInfo.email,
+            contact: clientInfo.phone
           },
           theme: {
             color: service.color
@@ -263,13 +303,29 @@ export function ServiceModal({ service, onClose }: Props) {
         toast.error("Could not initiate payment. Please try again later.");
       }
     } else {
-      await new Promise((r) => setTimeout(r, 1200));
-      toast.success(
-        "📞 Request received! Our consultant will reach you within 2 hours.",
-        { duration: 6000 }
-      );
-      navigate("/contact");
-      onClose();
+      try {
+        const response = await fetch("http://localhost:3001/api/enquiry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            message: `Consultation request for ${service.title}.`,
+          }),
+        });
+
+        if (response.ok) {
+          toast.success(
+            "📞 Request received! Our consultant will reach you within 2 hours.",
+            { duration: 6000 }
+          );
+          onClose();
+        } else {
+          toast.error("Failed to submit request. Please try again.");
+        }
+      } catch (error) {
+        console.error("Submit error:", error);
+        toast.error("Unable to connect to the server.");
+      }
     }
 
     setIsSubmitting(false);
@@ -321,6 +377,23 @@ export function ServiceModal({ service, onClose }: Props) {
             <span>{formatPrice(Math.round(service.basePrice * 0.4))}</span>
             <span>Starting from {formatPrice(service.basePrice)}</span>
             <span>{formatPrice(service.basePrice * 10)}</span>
+          </div>
+
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+            <span className="text-xs text-muted-foreground">Or Enter Custom Budget (₹):</span>
+            <div className="relative w-44">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-semibold">₹</span>
+              <input
+                type="number"
+                value={budget}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setBudget(val >= 0 ? val : 0);
+                }}
+                className="w-full pl-6 pr-2 py-1 rounded-lg bg-black/40 border border-white/10 focus:border-primary focus:outline-none text-right font-bold text-sm text-white"
+                placeholder="Enter budget"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -500,7 +573,7 @@ export function ServiceModal({ service, onClose }: Props) {
   };
 
   const renderSummary = () => {
-    const displayBudget = isWedding ? totalSubEventPrice : budget;
+    const displayBudget = budget || (isWedding ? totalSubEventPrice : budget);
     const selectedEvents = WEDDING_SUB_EVENTS.filter((e) => selectedSubEvents[e.id]);
 
     return (
@@ -535,10 +608,6 @@ export function ServiceModal({ service, onClose }: Props) {
                     <span className="font-semibold text-right text-xs max-w-[55%]">{v}</span>
                   </div>
                 ))}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Your Budget</span>
-                <span className="font-semibold">{formatPrice(budget)}</span>
-              </div>
             </div>
           )}
 
@@ -546,10 +615,67 @@ export function ServiceModal({ service, onClose }: Props) {
             className="border-t pt-3 flex justify-between items-center"
             style={{ borderColor: `${service.color}30` }}
           >
-            <span className="font-bold">Estimated Total</span>
-            <span className="text-xl font-bold" style={{ color: service.color }}>
-              {formatPrice(displayBudget)}
+            <span className="font-bold">Estimated Cost</span>
+            <span className="text-base font-semibold text-muted-foreground">
+              {formatPrice(isWedding ? totalSubEventPrice : service.basePrice)}
             </span>
+          </div>
+
+          <div className="pt-3 border-t border-dashed flex items-center justify-between" style={{ borderColor: `${service.color}20` }}>
+            <span className="text-sm font-semibold">Your Custom Budget</span>
+            <div className="relative w-44">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-semibold">₹</span>
+              <input
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(Math.max(0, Number(e.target.value)))}
+                className="w-full pl-6 pr-2 py-1 rounded-lg bg-black/40 border border-white/10 focus:border-primary focus:outline-none text-right font-bold text-sm text-white"
+                style={{ color: service.color }}
+                placeholder="Target budget"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Info Form */}
+        <div className="p-4 rounded-xl border border-white/5 space-y-3 bg-white/[0.01]">
+          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Your Contact Details</h4>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Name</label>
+              <input
+                type="text"
+                required
+                placeholder="Full Name"
+                value={clientInfo.name}
+                onChange={(e) => setClientInfo({ ...clientInfo, name: e.target.value })}
+                className="w-full px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-sm focus:outline-none focus:border-primary text-white"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="your@email.com"
+                  value={clientInfo.email}
+                  onChange={(e) => setClientInfo({ ...clientInfo, email: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-sm focus:outline-none focus:border-primary text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Phone</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="Phone number"
+                  value={clientInfo.phone}
+                  onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value })}
+                  className="w-full px-3 py-1.5 rounded-lg bg-black/30 border border-white/10 text-sm focus:outline-none focus:border-primary text-white"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

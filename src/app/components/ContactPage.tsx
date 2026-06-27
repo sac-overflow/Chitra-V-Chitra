@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GlowCard } from "./GlowCard";
 import { NeonButton } from "./NeonButton";
 import { StarField } from "./StarField";
+import { toast } from "sonner";
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -16,14 +17,71 @@ export function ContactPage() {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.message.trim()) {
-      alert("Please fill out all required fields with valid information.");
+      toast.error("Please fill out all required fields.");
       return;
     }
-    console.log("Form submitted:", formData);
-    alert("Thank you! We'll get back to you shortly.");
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    // Phone validation
+    const cleanPhone = formData.phone.replace(/[^0-9]/g, "");
+    const phoneRegex = /^\+?[0-9\s\-()]{10,15}$/;
+    if (!phoneRegex.test(formData.phone.trim()) || cleanPhone.length < 10 || cleanPhone.length > 15) {
+      toast.error("Please enter a valid phone number (10 to 15 digits).");
+      return;
+    }
+
+    // Budget validation
+    if (formData.budget !== "") {
+      const budgetNum = Number(formData.budget);
+      if (!isNaN(budgetNum) && budgetNum <= 0) {
+        toast.error("Budget must be a positive number greater than 0.");
+        return;
+      }
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("http://localhost:3001/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          action: "contact",
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("🎉 Enquiry sent! Our team will get back to you shortly.");
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          eventType: "",
+          eventDate: "",
+          budget: "",
+          message: "",
+        });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to submit enquiry. Please try again.");
+      }
+    } catch (error) {
+      console.error("Enquiry submission error:", error);
+      toast.error("Unable to connect to the server.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -216,9 +274,9 @@ export function ContactPage() {
                 </div>
 
                 <div className="pt-4">
-                  <NeonButton variant="primary" size="lg">
+                  <NeonButton variant="primary" size="lg" disabled={isSubmitting}>
                     <Send className="w-5 h-5" />
-                    Send Enquiry
+                    {isSubmitting ? "Sending..." : "Send Enquiry"}
                   </NeonButton>
                 </div>
               </form>

@@ -50,6 +50,123 @@ app.post('/api/verify-payment', (req, res) => {
   }
 });
 
+const fs = require('fs');
+const path = require('path');
+
+const enquiriesCsvPath = path.join(__dirname, 'enquiries.csv');
+
+app.post('/api/enquiry', (req, res) => {
+  try {
+    const { name, email, phone, eventType, eventDate, budget, message, service, packageType, selectedPackages, customizations, action } = req.body;
+    
+    // Server-side validations for edge cases
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "Name is required." });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ error: "Please enter a valid email address." });
+    }
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({ error: "Phone number is required." });
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    const phoneRegex = /^\+?[0-9\s\-()]{10,15}$/;
+    if (!phoneRegex.test(phone.trim()) || cleanPhone.length < 10 || cleanPhone.length > 15) {
+      return res.status(400).json({ error: "Please enter a valid phone number (10 to 15 digits)." });
+    }
+    if (budget !== undefined && budget !== null && budget !== "") {
+      const budgetNum = Number(budget);
+      if (!isNaN(budgetNum) && budgetNum <= 0) {
+        return res.status(400).json({ error: "Budget must be a positive number greater than 0." });
+      }
+    }
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: "Message is required." });
+    }
+
+    const timestamp = new Date().toISOString();
+    
+    // Helper to escape values for CSV format
+    const csvEscape = (val) => {
+      if (val === null || val === undefined) return '""';
+      let stringVal = typeof val === 'object' ? JSON.stringify(val) : String(val);
+      return `"${stringVal.replace(/"/g, '""')}"`;
+    };
+
+    const row = [
+      timestamp,
+      name,
+      email,
+      phone,
+      eventType,
+      eventDate,
+      budget,
+      message,
+      service,
+      packageType,
+      selectedPackages,
+      customizations,
+      action
+    ].map(csvEscape).join(',') + '\n';
+
+    const fileExists = fs.existsSync(enquiriesCsvPath);
+    if (!fileExists) {
+      const headers = [
+        'Timestamp',
+        'Name',
+        'Email',
+        'Phone',
+        'Event Type',
+        'Event Date',
+        'Budget',
+        'Message',
+        'Service',
+        'Package Type',
+        'Selected Packages',
+        'Customizations',
+        'Action'
+      ].join(',') + '\n';
+      fs.writeFileSync(enquiriesCsvPath, headers, 'utf8');
+    }
+
+    fs.appendFileSync(enquiriesCsvPath, row, 'utf8');
+
+    // Styled console notification for the admin
+    console.log('\n=============================================');
+    console.log('🚨 NEW CUSTOMER INQUIRY RECEIVED 🚨');
+    console.log(`👤 Name: ${name || 'N/A'}`);
+    console.log(`📧 Email: ${email || 'N/A'}`);
+    console.log(`📞 Phone: ${phone || 'N/A'}`);
+    console.log(`💰 Budget: ${budget || 'N/A'}`);
+    console.log(`📁 Service/Event: ${service || eventType || 'N/A'}`);
+    console.log(`💬 Message: ${message || 'N/A'}`);
+    console.log('=============================================\n');
+
+    res.status(200).json({ success: true, message: 'Enquiry saved successfully' });
+  } catch (error) {
+    console.error('Error saving enquiry:', error);
+    res.status(500).json({ error: 'Failed to save enquiry' });
+  }
+});
+
+app.get('/api/enquiries', (req, res) => {
+  try {
+    if (!fs.existsSync(enquiriesCsvPath)) {
+      return res.status(404).json({ error: 'No enquiries logged yet.' });
+    }
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=enquiries.csv');
+    fs.createReadStream(enquiriesCsvPath).pipe(res);
+  } catch (error) {
+    console.error('Error fetching enquiries:', error);
+    res.status(500).json({ error: 'Failed to fetch enquiries' });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Razorpay Server listening on port ${PORT}`);
