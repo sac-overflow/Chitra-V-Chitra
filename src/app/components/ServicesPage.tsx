@@ -216,7 +216,7 @@ export function ServicesPage() {
                     {service.description}
                   </p>
 
-                  {/* Badge + price */}
+                  {/* Badge */}
                   <div className="flex items-center justify-between mb-5">
                     <span
                       className="text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider"
@@ -227,12 +227,6 @@ export function ServicesPage() {
                       }}
                     >
                       {PACKAGE_LABELS[service.packageType]}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      from{" "}
-                      <span className="font-bold" style={{ color: service.color }}>
-                        {formatBase(service.basePrice)}
-                      </span>
                     </span>
                   </div>
 

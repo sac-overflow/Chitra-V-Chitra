@@ -62,15 +62,15 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4 text-primary" />
-                +91 98765 43210
+                +91 7702640801
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary" />
-                hello@chitravichitra.events
+                info@chitravichitraevents.com
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4 text-primary" />
-                Mumbai, India
+                Secunderabad, India
               </li>
             </ul>
           </div>
@@ -82,7 +82,7 @@ export function Footer() {
               {[
                 { icon: Instagram, color: "#D91CFF" },
                 { icon: Facebook, color: "#00D4FF" },
-                { icon: Twitter, color: "#8B2BFF" },
+                { icon: XIcon, color: "#8B2BFF" },
               ].map((social, index) => (
                 <button
                   key={index}

@@ -34,30 +34,30 @@ function downloadBrochure() {
 <body>
   <h1>CHITRA VICHITRA EVENTS</h1>
   <div class="tagline">We Don't Plan Events. We Create Experiences.</div>
-  <div class="sub">Premium Event Management · Mumbai, India</div>
+  <div class="sub">Premium Event Management · Secunderabad, India</div>
   <div class="divider"></div>
   <h2>OUR SERVICES</h2>
   <div class="grid">
-    <div class="card"><div class="card-title">Wedding Planning</div><div class="card-price">Starting ₹5,00,000</div><div class="card-desc">Full packages — Engagement, Mehndi, Haldi, Sangeet, Ceremony & Reception. Fully customizable.</div></div>
-    <div class="card"><div class="card-title">Corporate Events</div><div class="card-price">Starting ₹1,50,000</div><div class="card-desc">Conferences, product launches, team building, galas & awards nights.</div></div>
-    <div class="card"><div class="card-title">Concerts & Live Shows</div><div class="card-price">Starting ₹3,00,000</div><div class="card-desc">Full-scale production — stage, sound, lighting, artist coordination & security.</div></div>
-    <div class="card"><div class="card-title">Private Parties</div><div class="card-price">Starting ₹80,000</div><div class="card-desc">Birthdays, anniversaries, themed celebrations with personalized decor & entertainment.</div></div>
-    <div class="card"><div class="card-title">Exhibitions</div><div class="card-price">Starting ₹1,00,000</div><div class="card-desc">Art shows, trade fairs, product displays & cultural showcases with premium booth design.</div></div>
-    <div class="card"><div class="card-title">Stage Design</div><div class="card-price">Starting ₹80,000</div><div class="card-desc">Custom stage architecture, lighting design, backdrops & immersive visual environments.</div></div>
+    <div class="card"><div class="card-title">Wedding Planning</div><div class="card-price">Custom Budget</div><div class="card-desc">Full packages — Engagement, Mehndi, Haldi, Sangeet, Ceremony & Reception. Fully customizable.</div></div>
+    <div class="card"><div class="card-title">Corporate Events</div><div class="card-price">Custom Budget</div><div class="card-desc">Conferences, product launches, team building, galas & awards nights.</div></div>
+    <div class="card"><div class="card-title">Concerts & Live Shows</div><div class="card-price">Custom Budget</div><div class="card-desc">Full-scale production — stage, sound, lighting, artist coordination & security.</div></div>
+    <div class="card"><div class="card-title">Private Parties</div><div class="card-price">Custom Budget</div><div class="card-desc">Birthdays, anniversaries, themed celebrations with personalized decor & entertainment.</div></div>
+    <div class="card"><div class="card-title">Exhibitions</div><div class="card-price">Custom Budget</div><div class="card-desc">Art shows, trade fairs, product displays & cultural showcases with premium booth design.</div></div>
+    <div class="card"><div class="card-title">Stage Design</div><div class="card-price">Custom Budget</div><div class="card-desc">Custom stage architecture, lighting design, backdrops & immersive visual environments.</div></div>
   </div>
   <div class="divider"></div>
   <h2>ONBOARDING PROCESS</h2>
   <p style="color:rgba(255,255,255,0.7);font-size:0.83rem;line-height:2;margin-bottom:28px;">
     1. <strong style="color:#FF0F8F">Free Consultation</strong> — Share your vision with our planning team<br/>
     2. <strong style="color:#8B2BFF">Custom Proposal</strong> — Receive a detailed plan within 48 hours<br/>
-    3. <strong style="color:#00D4FF">Onboarding Fee ₹299</strong> — Lock your date & begin planning<br/>
+    3. <strong style="color:#00D4FF">Consultation Fee ₹299 (includes GST)</strong> — Get team contacted (Refund ₹250 excluding taxes if you exit & dislike service)<br/>
     4. <strong style="color:#FFD500">Flawless Execution</strong> — We handle every detail to perfection
   </p>
   <div class="divider"></div>
   <h2>CONTACT US</h2>
-  <div class="contact-row"><span class="contact-label">Phone</span> +91 98765 43210</div>
-  <div class="contact-row"><span class="contact-label">Email</span> hello@chitravichitra.events</div>
-  <div class="contact-row"><span class="contact-label">Location</span> Mumbai, Maharashtra, India</div>
+  <div class="contact-row"><span class="contact-label">Phone</span> +91 7702640801</div>
+  <div class="contact-row"><span class="contact-label">Email</span> info@chitravichitraevents.com</div>
+  <div class="contact-row"><span class="contact-label">Location</span> Plot No. 777, H. No.37– 18/38, Defence Colony, Sainikpuri, Secunderabad - 500094</div>
   <div class="footer">© ${new Date().getFullYear()} Chitra Vichitra Events · All rights reserved</div>
 </body>
 </html>`;

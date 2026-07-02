@@ -197,39 +197,39 @@ export function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <a href="https://maps.google.com/?q=Bandra+Kurla+Complex,+Mumbai" target="_blank" rel="noopener noreferrer" className="block outline-none">
+              <a href="https://maps.google.com/?q=Sainikpuri,+Secunderabad" target="_blank" rel="noopener noreferrer" className="block outline-none">
                 <GlowCard className="p-8 transition-all hover:scale-[1.02]" glowColor="#FF0F8F">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="p-4 rounded-xl bg-[#FF0F8F]15 border border-[#FF0F8F]30">
                       <Star className="w-6 h-6 text-[#FF0F8F]" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl">Mumbai Head Office</h3>
+                      <h3 className="font-bold text-xl">Corporate Office</h3>
                     </div>
                   </div>
                   <p className="text-muted-foreground leading-relaxed ml-20">
-                    Bandra Kurla Complex (BKC),<br/>Mumbai, Maharashtra 400051
+                    Plot No. 777, H. No.37– 18/38,<br/>
+                    Defence Colony, Sainikpuri,<br/>
+                    Secunderabad - 500094
                   </p>
                 </GlowCard>
               </a>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
-              <a href="https://maps.google.com/?q=Connaught+Place,+New+Delhi" target="_blank" rel="noopener noreferrer" className="block outline-none">
-                <GlowCard className="p-8 transition-all hover:scale-[1.02]" glowColor="#00D4FF">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="p-4 rounded-xl bg-[#00D4FF]15 border border-[#00D4FF]30">
-                      <Star className="w-6 h-6 text-[#00D4FF]" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl">Delhi Branch</h3>
-                    </div>
+              <GlowCard className="p-8 opacity-75 h-full" glowColor="#00D4FF">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-4 rounded-xl bg-[#00D4FF]15 border border-[#00D4FF]30">
+                    <Star className="w-6 h-6 text-[#00D4FF]" />
                   </div>
-                  <p className="text-muted-foreground leading-relaxed ml-20">
-                    Connaught Place,<br/>New Delhi, Delhi 110001
-                  </p>
-                </GlowCard>
-              </a>
+                  <div>
+                    <h3 className="font-bold text-xl">Branch Expansion</h3>
+                  </div>
+                </div>
+                <p className="text-muted-foreground leading-relaxed ml-20">
+                  Mumbai and other branch offices are to be updated soon.
+                </p>
+              </GlowCard>
             </motion.div>
           </div>
         </div>

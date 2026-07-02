@@ -1,10 +1,16 @@
 import { motion } from "motion/react";
-import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Send, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Facebook, Send, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { GlowCard } from "./GlowCard";
 import { NeonButton } from "./NeonButton";
 import { StarField } from "./StarField";
 import { toast } from "sonner";
+
+const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={props.className} style={props.style}>
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -44,8 +50,8 @@ export function ContactPage() {
     // Budget validation
     if (formData.budget !== "") {
       const budgetNum = Number(formData.budget);
-      if (!isNaN(budgetNum) && budgetNum <= 0) {
-        toast.error("Budget must be a positive number greater than 0.");
+      if (isNaN(budgetNum) || budgetNum < 1000 || budgetNum > 100000000) {
+        toast.error("Budget must be between ₹1,000 and ₹10,00,00,000 (10 Crores).");
         return;
       }
     }
@@ -94,19 +100,19 @@ export function ContactPage() {
     {
       icon: Phone,
       label: "Phone",
-      value: "+91 98765 43210",
+      value: "+91 7702640801",
       color: "#FF0F8F",
     },
     {
       icon: Mail,
       label: "Email",
-      value: "hello@chitravichitra.events",
+      value: "info@chitravichitraevents.com",
       color: "#8B2BFF",
     },
     {
       icon: MapPin,
       label: "Location",
-      value: "Mumbai, India",
+      value: "Secunderabad, India",
       color: "#00D4FF",
     },
   ];
@@ -114,7 +120,7 @@ export function ContactPage() {
   const socialLinks = [
     { icon: Instagram, color: "#D91CFF", label: "Instagram" },
     { icon: Facebook, color: "#00D4FF", label: "Facebook" },
-    { icon: Twitter, color: "#8B2BFF", label: "Twitter" },
+    { icon: XIcon, color: "#8B2BFF", label: "X" },
   ];
 
   return (
@@ -205,7 +211,7 @@ export function ContactPage() {
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-3 rounded-xl bg-input-background border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 7702640801"
                     />
                   </div>
 
@@ -243,20 +249,18 @@ export function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Budget Range</label>
-                    <select
+                    <label className="block text-sm font-semibold mb-2">Budget (₹)</label>
+                    <input
+                      type="number"
                       name="budget"
                       value={formData.budget}
                       onChange={handleChange}
                       required
+                      min={1000}
+                      max={100000000}
                       className="w-full px-4 py-3 rounded-xl bg-input-background border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                    >
-                      <option value="">Select budget</option>
-                      <option value="5-10L">₹5-10 Lakhs</option>
-                      <option value="10-25L">₹10-25 Lakhs</option>
-                      <option value="25-50L">₹25-50 Lakhs</option>
-                      <option value="50L+">₹50 Lakhs+</option>
-                    </select>
+                      placeholder="Enter target budget"
+                    />
                   </div>
                 </div>
 
@@ -307,7 +311,19 @@ export function ContactPage() {
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground mb-1">{info.label}</div>
-                      <div className="font-semibold">{info.value}</div>
+                      {info.label === "Location" ? (
+                        <a
+                          href="https://maps.app.goo.gl/H38iuQenAsi1FQ3K8"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold hover:underline"
+                          style={{ color: info.color }}
+                        >
+                          {info.value}
+                        </a>
+                      ) : (
+                        <div className="font-semibold">{info.value}</div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -341,7 +357,7 @@ export function ContactPage() {
               <h3 className="text-xl font-bold mb-4">Chat on WhatsApp</h3>
               <p className="text-sm text-muted-foreground mb-6">Need quick answers? Message us directly.</p>
               <a
-                href="https://wa.me/919876543210"
+                href="https://wa.me/917702640801"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-3 transition-all hover:opacity-90"
@@ -354,37 +370,37 @@ export function ContactPage() {
 
             {/* Location Cards */}
             <div className="grid grid-cols-1 gap-6">
-              <a href="https://maps.google.com/?q=Bandra+Kurla+Complex,+Mumbai" target="_blank" rel="noopener noreferrer" className="block outline-none">
+              <a href="https://maps.app.goo.gl/H38iuQenAsi1FQ3K8" target="_blank" rel="noopener noreferrer" className="block outline-none">
                 <GlowCard className="p-6 transition-all hover:scale-[1.02]">
                   <div className="flex items-center gap-4 mb-3">
                     <div className="p-3 rounded-lg bg-[#FF0F8F]15 border border-[#FF0F8F]30">
                       <MapPin className="w-5 h-5 text-[#FF0F8F]" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-lg">Mumbai Head Office</h4>
+                      <h4 className="font-bold text-lg">Corporate Office</h4>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground ml-16">
-                    Bandra Kurla Complex (BKC),<br/>Mumbai, Maharashtra 400051
+                    Plot No. 777, H. No.37– 18/38,<br/>
+                    Defence Colony, Sainikpuri,<br/>
+                    Secunderabad - 500094
                   </p>
                 </GlowCard>
               </a>
 
-              <a href="https://maps.google.com/?q=Connaught+Place,+New+Delhi" target="_blank" rel="noopener noreferrer" className="block outline-none">
-                <GlowCard className="p-6 transition-all hover:scale-[1.02]">
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="p-3 rounded-lg bg-[#00D4FF]15 border border-[#00D4FF]30">
-                      <MapPin className="w-5 h-5 text-[#00D4FF]" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-lg">Delhi Branch</h4>
-                    </div>
+              <GlowCard className="p-6 opacity-75">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="p-3 rounded-lg bg-[#8B2BFF]15 border border-[#8B2BFF]30">
+                    <MapPin className="w-5 h-5 text-[#8B2BFF]" />
                   </div>
-                  <p className="text-sm text-muted-foreground ml-16">
-                    Connaught Place,<br/>New Delhi, Delhi 110001
-                  </p>
-                </GlowCard>
-              </a>
+                  <div>
+                    <h4 className="font-bold text-lg">Expansion</h4>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground ml-16">
+                  Mumbai and other branch offices are to be updated soon.
+                </p>
+              </GlowCard>
             </div>
           </motion.div>
         </div>

@@ -39,7 +39,7 @@ export default function App() {
           <Footer />
           {/* WhatsApp Floater */}
           <motion.a
-            href="https://wa.me/919876543210"
+            href="https://wa.me/917702640801"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.1 }}

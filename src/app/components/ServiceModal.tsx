@@ -158,7 +158,7 @@ export function ServiceModal({ service, onClose }: Props) {
     : ["Overview", "Options", "Summary"];
 
   const [step, setStep]   = useState(0);
-  const [budget, setBudget] = useState(service.basePrice);
+  const [budget, setBudget] = useState<number>(150000);
 
   // Wedding state
   const [selectedSubEvents, setSelectedSubEvents] = useState<Record<string, boolean>>(
@@ -214,9 +214,9 @@ export function ServiceModal({ service, onClose }: Props) {
       return;
     }
 
-    const finalBudget = budget || (isWedding ? totalSubEventPrice : budget);
-    if (finalBudget <= 0 || isNaN(Number(finalBudget))) {
-      toast.error("Budget must be a positive number greater than 0.");
+    const finalBudget = Number(budget);
+    if (isNaN(finalBudget) || finalBudget < 1000 || finalBudget > 100000000) {
+      toast.error("Budget must be between ₹1,000 and ₹10,00,00,000 (10 Crores).");
       return;
     }
 
@@ -252,7 +252,7 @@ export function ServiceModal({ service, onClose }: Props) {
           amount: order.amount,
           currency: order.currency,
           name: "Chitra Vichitra Events",
-          description: "Onboarding Fee",
+          description: "Consultation Fee",
           order_id: order.id,
           handler: async function (response: any) {
             try {
@@ -270,7 +270,7 @@ export function ServiceModal({ service, onClose }: Props) {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     ...payload,
-                    message: `Paid Onboarding Fee (₹299) successfully. Payment ID: ${response.razorpay_payment_id}`,
+                    message: `Paid Consultation Fee (₹299) successfully. Payment ID: ${response.razorpay_payment_id}`,
                   }),
                 });
 
@@ -355,58 +355,30 @@ export function ServiceModal({ service, onClose }: Props) {
         {service.details}
       </p>
 
-      {!isWedding && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold">Your Budget Range</label>
-            <span className="font-bold text-lg" style={{ color: service.color }}>
-              {formatPrice(budget)}
-            </span>
-          </div>
+      <div className="space-y-4 pt-2">
+        <label className="text-sm font-semibold block">Your Target Budget (₹)</label>
+        <div className="relative">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">₹</span>
           <input
-            type="range"
-            min={Math.round(service.basePrice * 0.4)}
-            max={service.basePrice * 10}
-            step={10000}
-            value={budget}
-            onChange={(e) => setBudget(Number(e.target.value))}
-            className="w-full h-2 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: service.color }}
+            type="number"
+            value={budget || ""}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setBudget(val >= 0 ? val : 0);
+            }}
+            className="w-full pl-9 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 focus:border-primary focus:outline-none font-bold text-sm text-white focus:ring-2 focus:ring-primary/20"
+            placeholder="Enter your custom budget"
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatPrice(Math.round(service.basePrice * 0.4))}</span>
-            <span>Starting from {formatPrice(service.basePrice)}</span>
-            <span>{formatPrice(service.basePrice * 10)}</span>
-          </div>
-
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-            <span className="text-xs text-muted-foreground">Or Enter Custom Budget (₹):</span>
-            <div className="relative w-44">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-semibold">₹</span>
-              <input
-                type="number"
-                value={budget}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setBudget(val >= 0 ? val : 0);
-                }}
-                className="w-full pl-6 pr-2 py-1 rounded-lg bg-black/40 border border-white/10 focus:border-primary focus:outline-none text-right font-bold text-sm text-white"
-                placeholder="Enter budget"
-              />
-            </div>
-          </div>
         </div>
-      )}
-
-      {isWedding && (
-        <div
-          className="p-4 rounded-xl text-center"
-          style={{ background: `${service.color}08`, border: `1px solid ${service.color}30` }}
-        >
-          <p className="text-sm text-muted-foreground">Fully customizable — price depends on your selected events</p>
-          <p className="text-xs mt-1 text-muted-foreground">Wedding ceremony included · Add more events in the next step</p>
-        </div>
-      )}
+        <p className="text-xs text-muted-foreground">
+          Enter a custom budget between ₹1,000 and ₹10,00,00,000.
+        </p>
+        {isWedding && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Wedding ceremony is included. You can customize details and select additional events in the next steps.
+          </p>
+        )}
+      </div>
     </div>
   );
 
@@ -447,20 +419,14 @@ export function ServiceModal({ service, onClose }: Props) {
               )}
             </div>
           </div>
-          <div className="font-bold text-sm" style={{ color: service.color }}>
-            {formatPrice(ev.price)}
-          </div>
         </div>
       ))}
 
       <div
-        className="mt-2 p-4 rounded-xl flex items-center justify-between"
+        className="mt-2 p-4 rounded-xl text-center"
         style={{ background: `${service.color}10`, border: `1px solid ${service.color}30` }}
       >
-        <span className="font-semibold">Package Total</span>
-        <span className="text-xl font-bold" style={{ color: service.color }}>
-          {formatPrice(totalSubEventPrice)}
-        </span>
+        <span className="text-xs text-muted-foreground">Custom package compiled. Final quotation given after consultation.</span>
       </div>
     </div>
   );
@@ -492,6 +458,56 @@ export function ServiceModal({ service, onClose }: Props) {
             <SelectField label="Venue Type" options={VENUES}
               value={subEventOptions[ev.id]?.venue || ""}
               onChange={(v) => setSubOpt(ev.id, "venue", v)} color={service.color} />
+
+            {subEventOptions[ev.id]?.venue === "Destination Venue" && (
+              <div className="space-y-3 pt-2 pl-4 border-l-2" style={{ borderColor: service.color }}>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-widest" style={{ color: service.color }}>
+                    Destination City
+                  </label>
+                  <select
+                    value={subEventOptions[ev.id]?.destCityType || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSubOpt(ev.id, "destCityType", val);
+                      if (val !== "Other") {
+                        setSubOpt(ev.id, "destinationCity", val);
+                      } else {
+                        setSubOpt(ev.id, "destinationCity", "");
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 rounded-lg text-sm bg-card border text-foreground focus:outline-none transition-colors"
+                    style={{ borderColor: `${service.color}60` }}
+                  >
+                    <option value="">— Select Destination City —</option>
+                    <option value="Udaipur">Udaipur</option>
+                    <option value="Jaipur">Jaipur</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Mussoorie">Mussoorie</option>
+                    <option value="Jodhpur">Jodhpur</option>
+                    <option value="Rishikesh">Rishikesh</option>
+                    <option value="Mahabalipuram">Mahabalipuram</option>
+                    <option value="Other">Other (Enter Manually)</option>
+                  </select>
+                </div>
+
+                {subEventOptions[ev.id]?.destCityType === "Other" && (
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      Enter City Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Manali, Shimla"
+                      value={subEventOptions[ev.id]?.destinationCity || ""}
+                      onChange={(e) => setSubOpt(ev.id, "destinationCity", e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-lg text-sm bg-card border text-foreground focus:outline-none transition-colors focus:border-primary"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -573,7 +589,6 @@ export function ServiceModal({ service, onClose }: Props) {
   };
 
   const renderSummary = () => {
-    const displayBudget = budget || (isWedding ? totalSubEventPrice : budget);
     const selectedEvents = WEDDING_SUB_EVENTS.filter((e) => selectedSubEvents[e.id]);
 
     return (
@@ -590,13 +605,24 @@ export function ServiceModal({ service, onClose }: Props) {
           </div>
 
           {isWedding ? (
-            <div className="space-y-2">
-              {selectedEvents.map((ev) => (
-                <div key={ev.id} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{ev.name}</span>
-                  <span className="font-semibold">{formatPrice(ev.price)}</span>
-                </div>
-              ))}
+            <div className="space-y-3">
+              {selectedEvents.map((ev) => {
+                const opts = subEventOptions[ev.id] || {};
+                const customSummary = Object.entries(opts)
+                  .filter(([k, v]) => v && k !== "destCityType")
+                  .map(([k, v]) => `${k}: ${v}`)
+                  .join(", ");
+                return (
+                  <div key={ev.id} className="text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                    <div className="font-semibold text-foreground">{ev.name}</div>
+                    {customSummary && (
+                      <div className="text-xs text-muted-foreground mt-1 capitalize">
+                        {customSummary}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -610,16 +636,6 @@ export function ServiceModal({ service, onClose }: Props) {
                 ))}
             </div>
           )}
-
-          <div
-            className="border-t pt-3 flex justify-between items-center"
-            style={{ borderColor: `${service.color}30` }}
-          >
-            <span className="font-bold">Estimated Cost</span>
-            <span className="text-base font-semibold text-muted-foreground">
-              {formatPrice(isWedding ? totalSubEventPrice : service.basePrice)}
-            </span>
-          </div>
 
           <div className="pt-3 border-t border-dashed flex items-center justify-between" style={{ borderColor: `${service.color}20` }}>
             <span className="text-sm font-semibold">Your Custom Budget</span>
@@ -680,9 +696,9 @@ export function ServiceModal({ service, onClose }: Props) {
         </div>
 
         <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Final pricing confirmed after consultation. The onboarding fee of ₹299 is fully adjustable against your total package cost.
+          Final pricing confirmed after consultation. Getting our team contacted for consultation costs ₹299 which includes GST.
           <br />
-          <span className="font-semibold mt-1 block">* The ₹299 upfront payment is refundable by ₹250 if you decide not to proceed.</span>
+          <span className="font-semibold mt-1 block">* Upon exiting the consultation and quotation, if you dislike our service, you will get a refund of ₹250 (excluding taxes).</span>
         </p>
 
         <div className="space-y-3 pt-1">
@@ -700,7 +716,7 @@ export function ServiceModal({ service, onClose }: Props) {
             ) : (
               <CreditCard className="w-5 h-5" />
             )}
-            Pay Onboarding Fee — ₹299
+            Pay Consultation Fee — ₹299
           </button>
 
           <button

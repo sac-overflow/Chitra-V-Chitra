@@ -80,8 +80,8 @@ app.post('/api/enquiry', (req, res) => {
     }
     if (budget !== undefined && budget !== null && budget !== "") {
       const budgetNum = Number(budget);
-      if (!isNaN(budgetNum) && budgetNum <= 0) {
-        return res.status(400).json({ error: "Budget must be a positive number greater than 0." });
+      if (isNaN(budgetNum) || budgetNum < 1000 || budgetNum > 100000000) {
+        return res.status(400).json({ error: "Budget must be between ₹1,000 and ₹10,00,00,000." });
       }
     }
     if (!message || !message.trim()) {
