@@ -52,8 +52,81 @@ app.post('/api/verify-payment', (req, res) => {
 
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const enquiriesCsvPath = path.join(__dirname, 'enquiries.csv');
+
+// Nodemailer transport setup
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+async function sendEnquiryEmail(enquiryData) {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('⚠️ SMTP_USER or SMTP_PASS not set in environment. Skipping email dispatch.');
+    return;
+  }
+
+  const { name, email, phone, eventType, eventDate, budget, message, service, packageType, selectedPackages, customizations, action } = enquiryData;
+
+  const mailOptions = {
+    from: `"Chitra V Chitra Enquiry" <${process.env.SMTP_USER}>`,
+    to: 'mahahitu080104@gmail.com',
+    subject: `New Enquiry Received from ${name}`,
+    text: `New Enquiry Details:
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+Event Type: ${eventType || 'N/A'}
+Event Date: ${eventDate || 'N/A'}
+Budget: ${budget || 'N/A'}
+Service: ${service || 'N/A'}
+Package Type: ${packageType || 'N/A'}
+Selected Packages: ${selectedPackages || 'N/A'}
+Customizations: ${customizations || 'N/A'}
+Action: ${action || 'N/A'}
+Message: ${message}
+`,
+    html: `
+      <h2>New Customer Enquiry</h2>
+      <table border="1" cellpadding="5" style="border-collapse: collapse;">
+        <tr><td><strong>Name</strong></td><td>${name}</td></tr>
+        <tr><td><strong>Email</strong></td><td>${email}</td></tr>
+        <tr><td><strong>Phone</strong></td><td>${phone}</td></tr>
+        <tr><td><strong>Event Type</strong></td><td>${eventType || 'N/A'}</td></tr>
+        <tr><td><strong>Event Date</strong></td><td>${eventDate || 'N/A'}</td></tr>
+        <tr><td><strong>Budget</strong></td><td>${budget || 'N/A'}</td></tr>
+        <tr><td><strong>Service</strong></td><td>${service || 'N/A'}</td></tr>
+        <tr><td><strong>Package Type</strong></td><td>${packageType || 'N/A'}</td></tr>
+        <tr><td><strong>Selected Packages</strong></td><td>${selectedPackages || 'N/A'}</td></tr>
+        <tr><td><strong>Customizations</strong></td><td>${customizations || 'N/A'}</td></tr>
+        <tr><td><strong>Action</strong></td><td>${action || 'N/A'}</td></tr>
+        <tr><td><strong>Message</strong></td><td>${message}</td></tr>
+      </table>
+    `,
+    attachments: []
+  };
+
+  if (fs.existsSync(enquiriesCsvPath)) {
+    mailOptions.attachments.push({
+      filename: 'enquiries.csv',
+      path: enquiriesCsvPath
+    });
+  }
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Enquiry email sent successfully to mahahitu080104@gmail.com');
+  } catch (error) {
+    console.error('❌ Failed to send enquiry email:', error);
+  }
+}
 
 app.post('/api/enquiry', (req, res) => {
   try {
@@ -134,6 +207,9 @@ app.post('/api/enquiry', (req, res) => {
     }
 
     fs.appendFileSync(enquiriesCsvPath, row, 'utf8');
+
+    // Trigger email sending asynchronously
+    sendEnquiryEmail(req.body);
 
     // Styled console notification for the admin
     console.log('\n=============================================');

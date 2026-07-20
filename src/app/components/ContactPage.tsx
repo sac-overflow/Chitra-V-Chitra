@@ -68,7 +68,20 @@ export function ContactPage() {
       });
 
       if (response.ok) {
-        toast.success("🎉 Enquiry sent! Our team will get back to you shortly.");
+        toast.success("🎉 Enquiry sent! Redirecting to WhatsApp...");
+        
+        const messageText = `Hello! I have just submitted an enquiry on your website.\n\n` +
+          `*Name:* ${formData.name}\n` +
+          `*Email:* ${formData.email}\n` +
+          `*Phone:* ${formData.phone}\n` +
+          `*Event Type:* ${formData.eventType || 'N/A'}\n` +
+          `*Event Date:* ${formData.eventDate || 'N/A'}\n` +
+          `*Budget:* ₹${formData.budget || 'N/A'}\n` +
+          `*Message:* ${formData.message}`;
+
+        const whatsappUrl = `https://wa.me/917702640801?text=${encodeURIComponent(messageText)}`;
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
         setFormData({
           name: "",
           email: "",
@@ -118,9 +131,9 @@ export function ContactPage() {
   ];
 
   const socialLinks = [
-    { icon: Instagram, color: "#D91CFF", label: "Instagram" },
-    { icon: Facebook, color: "#00D4FF", label: "Facebook" },
-    { icon: XIcon, color: "#8B2BFF", label: "X" },
+    { icon: Instagram, color: "#D91CFF", label: "Instagram", url: "https://instagram.com" },
+    { icon: Facebook, color: "#00D4FF", label: "Facebook", url: "https://facebook.com" },
+    { icon: XIcon, color: "#8B2BFF", label: "X", url: "https://x.com" },
   ];
 
   return (
@@ -335,11 +348,14 @@ export function ContactPage() {
               <h3 className="text-xl font-bold mb-6">Follow Us</h3>
               <div className="flex gap-4">
                 {socialLinks.map((social) => (
-                  <motion.button
+                  <motion.a
                     key={social.label}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, y: -3 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-4 rounded-xl transition-all"
+                    className="p-4 rounded-xl transition-all inline-block"
                     style={{
                       background: `${social.color}15`,
                       border: `1px solid ${social.color}30`,
@@ -347,7 +363,7 @@ export function ContactPage() {
                     aria-label={social.label}
                   >
                     <social.icon className="w-6 h-6" style={{ color: social.color }} />
-                  </motion.button>
+                  </motion.a>
                 ))}
               </div>
             </GlowCard>

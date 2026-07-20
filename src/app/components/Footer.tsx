@@ -80,20 +80,23 @@ export function Footer() {
             <h4 className="font-bold mb-4">Follow Us</h4>
             <div className="flex gap-3">
               {[
-                { icon: Instagram, color: "#D91CFF" },
-                { icon: Facebook, color: "#00D4FF" },
-                { icon: XIcon, color: "#8B2BFF" },
+                { icon: Instagram, color: "#D91CFF", url: "https://instagram.com" },
+                { icon: Facebook, color: "#00D4FF", url: "https://facebook.com" },
+                { icon: Twitter, color: "#8B2BFF", url: "https://x.com" },
               ].map((social, index) => (
-                <button
+                <a
                   key={index}
-                  className="p-3 rounded-lg transition-all hover:scale-110"
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-lg transition-all hover:scale-110 inline-block"
                   style={{
                     background: `${social.color}15`,
                     border: `1px solid ${social.color}30`,
                   }}
                 >
                   <social.icon className="w-5 h-5" style={{ color: social.color }} />
-                </button>
+                </a>
               ))}
             </div>
           </div>

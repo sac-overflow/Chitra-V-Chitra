@@ -314,10 +314,22 @@ export function ServiceModal({ service, onClose }: Props) {
         });
 
         if (response.ok) {
-          toast.success(
-            "📞 Request received! Our consultant will reach you within 2 hours.",
-            { duration: 6000 }
-          );
+          toast.success("🎉 Request received! Redirecting to WhatsApp...");
+
+          const formattedCustoms = isWedding 
+            ? Object.keys(selectedSubEvents).filter(k => selectedSubEvents[k]).join(", ")
+            : Object.entries(eventOptions).map(([k, v]) => `${k}: ${v}`).join(", ");
+
+          const messageText = `Hello! I would like to inquire about *${service.title}* services.\n\n` +
+            `*Name:* ${clientInfo.name}\n` +
+            `*Email:* ${clientInfo.email}\n` +
+            `*Phone:* ${clientInfo.phone}\n` +
+            `*Budget:* ₹${finalBudget}\n` +
+            `*Details:* ${formattedCustoms || 'N/A'}`;
+
+          const whatsappUrl = `https://wa.me/917702640801?text=${encodeURIComponent(messageText)}`;
+          window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
           onClose();
         } else {
           toast.error("Failed to submit request. Please try again.");

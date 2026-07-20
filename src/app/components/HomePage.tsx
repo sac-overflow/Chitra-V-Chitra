@@ -1,11 +1,13 @@
 import { motion } from "motion/react";
 import { Sparkles, Music, Briefcase, Heart, Users, Palette, Lightbulb, CheckCircle2, Target, Rocket } from "lucide-react";
+import { useNavigate } from "react-router";
 import { GlowCard } from "./GlowCard";
 import { NeonButton } from "./NeonButton";
 import { StarField } from "./StarField";
 import { LiquidFlow } from "./LiquidFlow";
 
 export function HomePage() {
+  const navigate = useNavigate();
   const experiences = [
     { icon: Heart, title: "Weddings", color: "#FF0F8F" },
     { icon: Briefcase, title: "Corporate Events", color: "#8B2BFF" },
@@ -89,11 +91,11 @@ export function HomePage() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="flex flex-wrap items-center justify-center gap-4"
           >
-            <NeonButton variant="primary" size="lg">
+            <NeonButton variant="primary" size="lg" onClick={() => navigate("/contact")}>
               <Sparkles className="w-5 h-5" />
               Plan Your Event
             </NeonButton>
-            <NeonButton variant="secondary" size="lg">
+            <NeonButton variant="secondary" size="lg" onClick={() => navigate("/services")}>
               <Rocket className="w-5 h-5" />
               Explore Services
             </NeonButton>
