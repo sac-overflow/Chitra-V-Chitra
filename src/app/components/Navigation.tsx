@@ -50,8 +50,7 @@ function downloadBrochure() {
   <p style="color:rgba(255,255,255,0.7);font-size:0.83rem;line-height:2;margin-bottom:28px;">
     1. <strong style="color:#FF0F8F">Free Consultation</strong> — Share your vision with our planning team<br/>
     2. <strong style="color:#8B2BFF">Custom Proposal</strong> — Receive a detailed plan within 48 hours<br/>
-    3. <strong style="color:#00D4FF">Consultation Fee ₹299 (includes GST)</strong> — Get team contacted (Refund ₹250 excluding taxes if you exit & dislike service)<br/>
-    4. <strong style="color:#FFD500">Flawless Execution</strong> — We handle every detail to perfection
+    3. <strong style="color:#00D4FF">Flawless Execution</strong> — We handle every detail to perfection
   </p>
   <div class="divider"></div>
   <h2>CONTACT US</h2>
@@ -88,6 +87,12 @@ export function Navigation() {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleLogoClick = () => {
+    if (location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -100,7 +105,7 @@ export function Navigation() {
         <Link
           to="/"
           className="flex items-center gap-3 group"
-          onClick={() => window.location.reload()}
+          onClick={handleLogoClick}
         >
           <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }}>
             <img

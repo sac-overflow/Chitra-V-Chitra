@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { Navigation } from "./components/Navigation";
 import { HomePage } from "./components/HomePage";
 import { AboutPage } from "./components/AboutPage";
@@ -24,6 +25,7 @@ function ScrollToTop() {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <Analytics />
       <BrowserRouter>
         <ScrollToTop />
         <div className="min-h-screen bg-background text-foreground overflow-x-hidden">

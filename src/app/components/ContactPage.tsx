@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
-import { Mail, Phone, MapPin, Instagram, Facebook, Send, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Mail, Phone, MapPin, Instagram, Facebook, Send, MessageCircle, ChevronDown, Check } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { GlowCard } from "./GlowCard";
 import { NeonButton } from "./NeonButton";
 import { StarField } from "./StarField";
@@ -11,6 +11,17 @@ const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 );
+
+const EVENT_TYPE_OPTIONS = [
+  "Wedding",
+  "Corporate Event",
+  "Concert / Live Show",
+  "Exhibition",
+  "Private Party",
+  "Product Launch",
+  "Birthday Celebration",
+  "Other",
+];
 
 export function ContactPage() {
   const [formData, setFormData] = useState({
@@ -24,6 +35,18 @@ export function ContactPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCombobox, setShowCombobox] = useState(false);
+  const comboboxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
+        setShowCombobox(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,22 +70,25 @@ export function ContactPage() {
       return;
     }
 
-    // Budget validation
-    if (formData.budget !== "") {
+    // Optional budget validation
+    if (formData.budget && formData.budget.trim() !== "") {
       const budgetNum = Number(formData.budget);
-      if (isNaN(budgetNum) || budgetNum < 1000 || budgetNum > 100000000) {
-        toast.error("Budget must be between ₹1,000 and ₹10,00,00,000 (10 Crores).");
+      if (isNaN(budgetNum) || budgetNum < 0 || budgetNum > 100000000) {
+        toast.error("Please enter a valid budget amount (up to ₹10 Crores).");
         return;
       }
     }
-    
+
     setIsSubmitting(true);
+    const API_BASE = import.meta.env.DEV ? "http://localhost:3001" : "";
+
     try {
-      const response = await fetch("http://localhost:3001/api/enquiry", {
+      const response = await fetch(`${API_BASE}/api/enquiry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          budget: formData.budget ? Number(formData.budget) : 'N/A',
           action: "contact",
         }),
       });
@@ -70,13 +96,17 @@ export function ContactPage() {
       if (response.ok) {
         toast.success("🎉 Enquiry sent! Redirecting to WhatsApp...");
         
+        const budgetDisplay = formData.budget && !isNaN(Number(formData.budget))
+          ? `₹${Number(formData.budget).toLocaleString('en-IN')}`
+          : 'Not Specified';
+
         const messageText = `Hello! I have just submitted an enquiry on your website.\n\n` +
           `*Name:* ${formData.name}\n` +
           `*Email:* ${formData.email}\n` +
           `*Phone:* ${formData.phone}\n` +
           `*Event Type:* ${formData.eventType || 'N/A'}\n` +
           `*Event Date:* ${formData.eventDate || 'N/A'}\n` +
-          `*Budget:* ₹${formData.budget || 'N/A'}\n` +
+          `*Budget:* ${budgetDisplay}\n` +
           `*Message:* ${formData.message}`;
 
         const whatsappUrl = `https://wa.me/917702640801?text=${encodeURIComponent(messageText)}`;
@@ -92,7 +122,7 @@ export function ContactPage() {
           message: "",
         });
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         toast.error(errorData.error || "Failed to submit enquiry. Please try again.");
       }
     } catch (error) {
@@ -228,23 +258,68 @@ export function ContactPage() {
                     />
                   </div>
 
-                  <div>
+                  {/* Auto-complete / Combobox for Event Type */}
+                  <div className="relative" ref={comboboxRef}>
                     <label className="block text-sm font-semibold mb-2">Event Type</label>
-                    <select
-                      name="eventType"
-                      value={formData.eventType}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl bg-input-background border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                    >
-                      <option value="">Select event type</option>
-                      <option value="wedding">Wedding</option>
-                      <option value="corporate">Corporate Event</option>
-                      <option value="concert">Concert/Live Show</option>
-                      <option value="exhibition">Exhibition</option>
-                      <option value="party">Private Party</option>
-                      <option value="other">Other</option>
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="eventType"
+                        value={formData.eventType}
+                        onChange={(e) => {
+                          setFormData({ ...formData, eventType: e.target.value });
+                          setShowCombobox(true);
+                        }}
+                        onFocus={() => setShowCombobox(true)}
+                        className="w-full px-4 py-3 rounded-xl bg-input-background border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all pr-10"
+                        placeholder="Type or select event type..."
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCombobox((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors"
+                      >
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showCombobox ? "rotate-180" : ""}`} />
+                      </button>
+                    </div>
+
+                    <AnimatePresence>
+                      {showCombobox && (
+                        <motion.ul
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute left-0 right-0 top-full mt-2 py-2 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto"
+                        >
+                          {EVENT_TYPE_OPTIONS.filter((opt) =>
+                            opt.toLowerCase().includes((formData.eventType || "").toLowerCase())
+                          ).map((option) => (
+                            <li
+                              key={option}
+                              onClick={() => {
+                                setFormData({ ...formData, eventType: option });
+                                setShowCombobox(false);
+                              }}
+                              className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-between ${
+                                formData.eventType === option ? "font-bold text-primary bg-primary/5" : "text-foreground/90"
+                              }`}
+                            >
+                              <span>{option}</span>
+                              {formData.eventType === option && <Check className="w-4 h-4 text-primary" />}
+                            </li>
+                          ))}
+                          {EVENT_TYPE_OPTIONS.filter((opt) =>
+                            opt.toLowerCase().includes((formData.eventType || "").toLowerCase())
+                          ).length === 0 && (
+                            <li className="px-4 py-2.5 text-xs text-muted-foreground italic">
+                              Custom type: "{formData.eventType}"
+                            </li>
+                          )}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -262,17 +337,16 @@ export function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Budget (₹)</label>
+                    <label className="block text-sm font-semibold mb-2">
+                      Budget (₹) <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
+                    </label>
                     <input
                       type="number"
                       name="budget"
                       value={formData.budget}
                       onChange={handleChange}
-                      required
-                      min={1000}
-                      max={100000000}
                       className="w-full px-4 py-3 rounded-xl bg-input-background border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                      placeholder="Enter target budget"
+                      placeholder="Enter target budget (Optional)"
                     />
                   </div>
                 </div>

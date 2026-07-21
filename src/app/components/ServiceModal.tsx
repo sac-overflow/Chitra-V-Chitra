@@ -193,7 +193,7 @@ export function ServiceModal({ service, onClose }: Props) {
   const setOpt = (key: string, val: string) =>
     setEventOptions((prev) => ({ ...prev, [key]: val }));
 
-  const handleSubmit = async (type: "contact" | "onboarding") => {
+  const handleSubmit = async () => {
     if (!clientInfo.name.trim() || !clientInfo.email.trim() || !clientInfo.phone.trim()) {
       toast.error("Please fill out your contact details (Name, Email, and Phone) in the form above.");
       return;
@@ -214,10 +214,16 @@ export function ServiceModal({ service, onClose }: Props) {
       return;
     }
 
-    const finalBudget = Number(budget);
-    if (isNaN(finalBudget) || finalBudget < 1000 || finalBudget > 100000000) {
-      toast.error("Budget must be between ₹1,000 and ₹10,00,00,000 (10 Crores).");
-      return;
+    let finalBudgetStr = "Not Specified";
+    let budgetVal: number | undefined = undefined;
+    if (budget !== 0 && budget !== undefined && budget !== null && !isNaN(Number(budget))) {
+      const budgetNum = Number(budget);
+      if (budgetNum < 0 || budgetNum > 100000000) {
+        toast.error("Please enter a valid budget amount (up to ₹10 Crores).");
+        return;
+      }
+      budgetVal = budgetNum;
+      finalBudgetStr = `₹${budgetNum.toLocaleString('en-IN')}`;
     }
 
     setIsSubmitting(true);
@@ -227,120 +233,56 @@ export function ServiceModal({ service, onClose }: Props) {
       phone: clientInfo.phone,
       service: service.title,
       packageType: service.packageType,
-      budget: finalBudget,
+      budget: budgetVal || 'N/A',
       selectedPackages: isWedding
         ? WEDDING_SUB_EVENTS.filter((e) => selectedSubEvents[e.id]).map((e) => e.name)
         : [],
       customizations: isWedding ? subEventOptions : eventOptions,
-      action: type,
+      action: "contact",
       timestamp: new Date().toISOString(),
     };
 
     console.log("📋 CVC Booking Submission →", JSON.stringify(payload, null, 2));
+    const API_BASE = import.meta.env.DEV ? "http://localhost:3001" : "";
 
-    if (type === "onboarding") {
-      try {
-        const response = await fetch("http://localhost:3001/api/create-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: 299, currency: "INR" }),
-        });
-        const order = await response.json();
+    try {
+      const response = await fetch(`${API_BASE}/api/enquiry`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          message: `Consultation request for ${service.title}.`,
+        }),
+      });
 
-        const options = {
-          key: "rzp_test_YourKeyIdHere", // Enter the Key ID generated from the Dashboard
-          amount: order.amount,
-          currency: order.currency,
-          name: "Chitra Vichitra Events",
-          description: "Consultation Fee",
-          order_id: order.id,
-          handler: async function (response: any) {
-            try {
-              const verifyRes = await fetch("http://localhost:3001/api/verify-payment", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(response),
-              });
-              const verifyData = await verifyRes.json();
-              
-              if (verifyData.message === 'Payment verified successfully') {
-                // Post details to the enquiry log CSV
-                await fetch("http://localhost:3001/api/enquiry", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    ...payload,
-                    message: `Paid Consultation Fee (₹299) successfully. Payment ID: ${response.razorpay_payment_id}`,
-                  }),
-                });
+      if (response.ok) {
+        toast.success("🎉 Request received! Redirecting to WhatsApp...");
 
-                toast.success(
-                  "🎉 Payment Successful! Our planning team will contact you within 24 hours.",
-                  { duration: 6000 }
-                );
-                onClose();
-              } else {
-                toast.error("Payment verification failed.");
-              }
-            } catch (err) {
-              toast.error("An error occurred while verifying the payment.");
-            }
-          },
-          prefill: {
-            name: clientInfo.name,
-            email: clientInfo.email,
-            contact: clientInfo.phone
-          },
-          theme: {
-            color: service.color
-          }
-        };
+        const formattedCustoms = isWedding 
+          ? Object.keys(selectedSubEvents).filter(k => selectedSubEvents[k]).join(", ")
+          : Object.entries(eventOptions).map(([k, v]) => `${k}: ${v}`).join(", ");
 
-        const rzp1 = new (window as any).Razorpay(options);
-        rzp1.open();
-      } catch (error) {
-        console.error("Razorpay Error:", error);
-        toast.error("Could not initiate payment. Please try again later.");
+        const messageText = `Hello! I would like to inquire about *${service.title}* services.\n\n` +
+          `*Name:* ${clientInfo.name}\n` +
+          `*Email:* ${clientInfo.email}\n` +
+          `*Phone:* ${clientInfo.phone}\n` +
+          `*Budget:* ${finalBudgetStr}\n` +
+          `*Details:* ${formattedCustoms || 'N/A'}`;
+
+        const whatsappUrl = `https://wa.me/917702640801?text=${encodeURIComponent(messageText)}`;
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+        onClose();
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        toast.error(errData.error || "Failed to submit request. Please try again.");
       }
-    } else {
-      try {
-        const response = await fetch("http://localhost:3001/api/enquiry", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...payload,
-            message: `Consultation request for ${service.title}.`,
-          }),
-        });
-
-        if (response.ok) {
-          toast.success("🎉 Request received! Redirecting to WhatsApp...");
-
-          const formattedCustoms = isWedding 
-            ? Object.keys(selectedSubEvents).filter(k => selectedSubEvents[k]).join(", ")
-            : Object.entries(eventOptions).map(([k, v]) => `${k}: ${v}`).join(", ");
-
-          const messageText = `Hello! I would like to inquire about *${service.title}* services.\n\n` +
-            `*Name:* ${clientInfo.name}\n` +
-            `*Email:* ${clientInfo.email}\n` +
-            `*Phone:* ${clientInfo.phone}\n` +
-            `*Budget:* ₹${finalBudget}\n` +
-            `*Details:* ${formattedCustoms || 'N/A'}`;
-
-          const whatsappUrl = `https://wa.me/917702640801?text=${encodeURIComponent(messageText)}`;
-          window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-
-          onClose();
-        } else {
-          toast.error("Failed to submit request. Please try again.");
-        }
-      } catch (error) {
-        console.error("Submit error:", error);
-        toast.error("Unable to connect to the server.");
-      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast.error("Unable to connect to the server.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   // ─── Step renders ────────────────────────────────────────────────────────────
@@ -368,7 +310,7 @@ export function ServiceModal({ service, onClose }: Props) {
       </p>
 
       <div className="space-y-4 pt-2">
-        <label className="text-sm font-semibold block">Your Target Budget (₹)</label>
+        <label className="text-sm font-semibold block">Your Target Budget (₹) <span className="text-xs text-muted-foreground font-normal">(Optional)</span></label>
         <div className="relative">
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">₹</span>
           <input
@@ -379,11 +321,11 @@ export function ServiceModal({ service, onClose }: Props) {
               setBudget(val >= 0 ? val : 0);
             }}
             className="w-full pl-9 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 focus:border-primary focus:outline-none font-bold text-sm text-white focus:ring-2 focus:ring-primary/20"
-            placeholder="Enter your custom budget"
+            placeholder="Enter target budget (Optional)"
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Enter a custom budget between ₹1,000 and ₹10,00,00,000.
+          Optional: Enter a custom budget if you have one in mind.
         </p>
         {isWedding && (
           <p className="text-xs text-muted-foreground mt-2">
@@ -708,14 +650,12 @@ export function ServiceModal({ service, onClose }: Props) {
         </div>
 
         <p className="text-xs text-muted-foreground text-center leading-relaxed">
-          Final pricing confirmed after consultation. Getting our team contacted for consultation costs ₹299 which includes GST.
-          <br />
-          <span className="font-semibold mt-1 block">* Upon exiting the consultation and quotation, if you dislike our service, you will get a refund of ₹250 (excluding taxes).</span>
+          Final details and quotation confirmed after personal consultation with our planning team.
         </p>
 
         <div className="space-y-3 pt-1">
           <button
-            onClick={() => handleSubmit("onboarding")}
+            onClick={() => handleSubmit()}
             disabled={isSubmitting}
             className="w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-3 transition-all hover:opacity-90 disabled:opacity-50"
             style={{
@@ -726,23 +666,9 @@ export function ServiceModal({ service, onClose }: Props) {
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <CreditCard className="w-5 h-5" />
+              <Phone className="w-5 h-5" />
             )}
-            Pay Consultation Fee — ₹299
-          </button>
-
-          <button
-            onClick={() => handleSubmit("contact")}
-            disabled={isSubmitting}
-            className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all hover:opacity-80"
-            style={{
-              background: "transparent",
-              border: `2px solid ${service.color}`,
-              color: service.color,
-            }}
-          >
-            <Phone className="w-5 h-5" />
-            Contact Us for Further Details
+            Submit Enquiry & Connect on WhatsApp
           </button>
         </div>
       </div>

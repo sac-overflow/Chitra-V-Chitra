@@ -77,7 +77,7 @@ async function sendEnquiryEmail(enquiryData) {
 
   const mailOptions = {
     from: `"Chitra V Chitra Enquiry" <${process.env.SMTP_USER}>`,
-    to: 'mahahitu080104@gmail.com',
+    to: ['mahahitu080104@gmail.com', 'info@chitravichitraevents.com'],
     subject: `New Enquiry Received from ${name}`,
     text: `New Enquiry Details:
 Name: ${name}
@@ -122,7 +122,7 @@ Message: ${message}
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('✅ Enquiry email sent successfully to mahahitu080104@gmail.com');
+    console.log('✅ Enquiry email sent successfully to mahahitu080104@gmail.com & info@chitravichitraevents.com');
   } catch (error) {
     console.error('❌ Failed to send enquiry email:', error);
   }
@@ -151,10 +151,10 @@ app.post('/api/enquiry', (req, res) => {
     if (!phoneRegex.test(phone.trim()) || cleanPhone.length < 10 || cleanPhone.length > 15) {
       return res.status(400).json({ error: "Please enter a valid phone number (10 to 15 digits)." });
     }
-    if (budget !== undefined && budget !== null && budget !== "") {
+    if (budget !== undefined && budget !== null && budget !== "" && budget !== 'N/A') {
       const budgetNum = Number(budget);
-      if (isNaN(budgetNum) || budgetNum < 1000 || budgetNum > 100000000) {
-        return res.status(400).json({ error: "Budget must be between ₹1,000 and ₹10,00,00,000." });
+      if (isNaN(budgetNum) || budgetNum < 0 || budgetNum > 100000000) {
+        return res.status(400).json({ error: "Please enter a valid budget amount." });
       }
     }
     if (!message || !message.trim()) {
@@ -186,27 +186,31 @@ app.post('/api/enquiry', (req, res) => {
       action
     ].map(csvEscape).join(',') + '\n';
 
-    const fileExists = fs.existsSync(enquiriesCsvPath);
-    if (!fileExists) {
-      const headers = [
-        'Timestamp',
-        'Name',
-        'Email',
-        'Phone',
-        'Event Type',
-        'Event Date',
-        'Budget',
-        'Message',
-        'Service',
-        'Package Type',
-        'Selected Packages',
-        'Customizations',
-        'Action'
-      ].join(',') + '\n';
-      fs.writeFileSync(enquiriesCsvPath, headers, 'utf8');
-    }
+    try {
+      const fileExists = fs.existsSync(enquiriesCsvPath);
+      if (!fileExists) {
+        const headers = [
+          'Timestamp',
+          'Name',
+          'Email',
+          'Phone',
+          'Event Type',
+          'Event Date',
+          'Budget',
+          'Message',
+          'Service',
+          'Package Type',
+          'Selected Packages',
+          'Customizations',
+          'Action'
+        ].join(',') + '\n';
+        fs.writeFileSync(enquiriesCsvPath, headers, 'utf8');
+      }
 
-    fs.appendFileSync(enquiriesCsvPath, row, 'utf8');
+      fs.appendFileSync(enquiriesCsvPath, row, 'utf8');
+    } catch (fsErr) {
+      console.warn('⚠️ Local CSV write skipped (Read-only environment on Vercel):', fsErr.message);
+    }
 
     // Trigger email sending asynchronously
     sendEnquiryEmail(req.body);
@@ -244,6 +248,10 @@ app.get('/api/enquiries', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Razorpay Server listening on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`CVC Server listening on port ${PORT}`);
+  });
+}
+
+module.exports = app;
