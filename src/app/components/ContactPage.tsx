@@ -94,23 +94,9 @@ export function ContactPage() {
       });
 
       if (response.ok) {
-        toast.success("🎉 Enquiry sent! Redirecting to WhatsApp...");
-        
-        const budgetDisplay = formData.budget && !isNaN(Number(formData.budget))
-          ? `₹${Number(formData.budget).toLocaleString('en-IN')}`
-          : 'Not Specified';
-
-        const messageText = `Hello! I have just submitted an enquiry on your website.\n\n` +
-          `*Name:* ${formData.name}\n` +
-          `*Email:* ${formData.email}\n` +
-          `*Phone:* ${formData.phone}\n` +
-          `*Event Type:* ${formData.eventType || 'N/A'}\n` +
-          `*Event Date:* ${formData.eventDate || 'N/A'}\n` +
-          `*Budget:* ${budgetDisplay}\n` +
-          `*Message:* ${formData.message}`;
-
-        const whatsappUrl = `https://wa.me/917702640801?text=${encodeURIComponent(messageText)}`;
-        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+        toast.success("🎉 Thank you! Your enquiry has been sent. Our team will get back to you shortly.", {
+          duration: 5000,
+        });
 
         setFormData({
           name: "",
@@ -364,11 +350,25 @@ export function ContactPage() {
                   />
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 flex flex-wrap items-center gap-4">
                   <NeonButton variant="primary" size="lg" disabled={isSubmitting}>
                     <Send className="w-5 h-5" />
                     {isSubmitting ? "Sending..." : "Send Enquiry"}
                   </NeonButton>
+                  <a
+                    href="https://wa.me/917702640801"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3.5 rounded-full font-semibold border text-sm flex items-center gap-2 transition-all hover:opacity-90"
+                    style={{
+                      borderColor: "rgba(37, 211, 102, 0.4)",
+                      color: "#25D366",
+                      background: "rgba(37, 211, 102, 0.06)",
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Or Chat on WhatsApp
+                  </a>
                 </div>
               </form>
             </GlowCard>
